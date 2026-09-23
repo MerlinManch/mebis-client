@@ -11,6 +11,8 @@
 		100000000000000000000003 /* BrowserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000003 /* BrowserModel.swift */; };
 		100000000000000000000004 /* BrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* BrowserView.swift */; };
 		100000000000000000000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* Assets.xcassets */; };
+		100000000000000000000006 /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000008 /* CredentialStore.swift */; };
+		100000000000000000000007 /* CredentialsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* CredentialsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +23,8 @@
 		200000000000000000000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		200000000000000000000006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		200000000000000000000007 /* ByCSLernclient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ByCSLernclient.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		200000000000000000000008 /* CredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStore.swift; sourceTree = "<group>"; };
+		200000000000000000000009 /* CredentialsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -29,7 +33,7 @@
 
 /* Begin PBXGroup section */
 		400000000000000000000001 = {isa = PBXGroup; children = (400000000000000000000002 /* ByCSLernclient */, 400000000000000000000003 /* Products */); sourceTree = "<group>"; };
-		400000000000000000000002 /* ByCSLernclient */ = {isa = PBXGroup; children = (200000000000000000000001, 200000000000000000000002, 200000000000000000000003, 200000000000000000000004, 200000000000000000000005, 200000000000000000000006); path = ByCSLernclient; sourceTree = "<group>"; };
+		400000000000000000000002 /* ByCSLernclient */ = {isa = PBXGroup; children = (200000000000000000000001, 200000000000000000000002, 200000000000000000000003, 200000000000000000000004, 200000000000000000000008, 200000000000000000000009, 200000000000000000000005, 200000000000000000000006); path = ByCSLernclient; sourceTree = "<group>"; };
 		400000000000000000000003 /* Products */ = {isa = PBXGroup; children = (200000000000000000000007); name = Products; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
@@ -69,7 +73,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		700000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001, 100000000000000000000002, 100000000000000000000003, 100000000000000000000004); runOnlyForDeploymentPostprocessing = 0; };
+		700000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001, 100000000000000000000002, 100000000000000000000003, 100000000000000000000004, 100000000000000000000006, 100000000000000000000007); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */

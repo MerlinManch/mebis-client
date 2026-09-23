@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var browser = BrowserModel()
     @State private var showClearConfirmation = false
+    @State private var showCredentials = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -23,6 +24,12 @@ struct ContentView: View {
                 Spacer(minLength: 0)
 
                 Menu {
+                    Button {
+                        showCredentials = true
+                    } label: {
+                        Label(browser.hasSavedCredentials ? "Anmeldedaten ändern" : "Anmeldedaten speichern",
+                              systemImage: "key")
+                    }
                     if let url = browser.currentURL, url.scheme == "https" {
                         Button {
                             UIApplication.shared.open(url)
@@ -33,7 +40,7 @@ struct ContentView: View {
                     Button(role: .destructive) {
                         showClearConfirmation = true
                     } label: {
-                        Label("Sitzung löschen", systemImage: "rectangle.portrait.and.arrow.right")
+                        Label("Abmelden", systemImage: "rectangle.portrait.and.arrow.right")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -49,6 +56,15 @@ struct ContentView: View {
                 ProgressView(value: browser.progress)
                     .progressViewStyle(.linear)
                     .accessibilityLabel("Seite wird geladen")
+            }
+
+            if let notice = browser.automaticLoginNotice {
+                Text(notice)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
             }
 
             BrowserView(webView: browser.webView)
@@ -76,10 +92,16 @@ struct ContentView: View {
             .font(.title3)
             .padding(.horizontal, 16)
         }
-        .confirmationDialog("Sitzung auf diesem Gerät löschen?", isPresented: $showClearConfirmation) {
-            Button("Sitzung löschen", role: .destructive) { browser.clearSession() }
+        .confirmationDialog("Abmelden und Zugangsdaten löschen?", isPresented: $showClearConfirmation) {
+            Button("Abmelden", role: .destructive) {
+                browser.removeCredentials()
+                browser.clearSession()
+            }
         } message: {
-            Text("Cookies und Website-Daten werden entfernt. Danach ist eine erneute Anmeldung erforderlich.")
+            Text("Cookies, Website-Daten und gespeicherte Zugangsdaten werden entfernt.")
+        }
+        .sheet(isPresented: $showCredentials) {
+            CredentialsView(browser: browser)
         }
         .alert("Hinweis", isPresented: Binding(
             get: { browser.errorMessage != nil },
