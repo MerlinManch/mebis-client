@@ -10,14 +10,19 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Show Xcode version
-        run: xcodebuild -version
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+          major="$(xcodebuild -version | awk '/^Xcode / {split($2, parts, "."); print parts[1]}')"
+          test "$major" -ge 26
+          xcodebuild -showsdks | grep -E 'iphoneos26\.'
 
       - name: Archive for iOS device
         run: |
