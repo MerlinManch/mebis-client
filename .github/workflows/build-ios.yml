@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      upload_testflight:
+        description: 'Signieren und zu TestFlight hochladen (Apple-API-Schlüssel erforderlich)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -52,3 +57,67 @@ jobs:
           path: ByCSLernclient-unsigned.ipa
           if-no-files-found: error
           retention-days: 14
+
+  testflight:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_testflight }}
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check signing configuration
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+        run: |
+          test -n "$ASC_API_KEY_ID" || { echo 'ASC_API_KEY_ID is missing'; exit 1; }
+          test -n "$ASC_ISSUER_ID" || { echo 'ASC_ISSUER_ID is missing'; exit 1; }
+          test -n "$ASC_API_KEY_P8" || { echo 'ASC_API_KEY_P8 is missing'; exit 1; }
+          major="$(xcodebuild -version | awk '/^Xcode / {split($2, parts, "."); print parts[1]}')"
+          test "$major" -ge 26
+          xcodebuild -showsdks | grep -E 'iphoneos26\.'
+
+      - name: Install temporary API key
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+        run: |
+          umask 077
+          printf '%s' "$ASC_API_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+
+      - name: Archive with automatic signing
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcodebuild \
+            -project ByCSLernclient.xcodeproj \
+            -scheme ByCSLernclient \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/ByCSLernclient.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            archive
+
+      - name: Upload signed build to TestFlight
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/ByCSLernclient.xcarchive" \
+            -exportPath "$RUNNER_TEMP/TestFlight" \
+            -exportOptionsPlist .github/TestFlightExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Remove temporary API key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
