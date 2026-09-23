@@ -15,7 +15,9 @@
     <key>CFBundleVersion</key>
     <string>$(CURRENT_PROJECT_VERSION)</string>
     <key>CFBundleDisplayName</key>
-    <string>Lernplattform</string>
+    <string>Mebis Lernclient</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
     <key>NSCameraUsageDescription</key>
     <string>Die Kamera wird nur verwendet, wenn du in einem Kurs ein Foto oder Video hochladen möchtest.</string>
     <key>NSMicrophoneUsageDescription</key>
