@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>$(MARKETING_VERSION)</string>
+    <key>CFBundleVersion</key>
+    <string>$(CURRENT_PROJECT_VERSION)</string>
+    <key>CFBundleDisplayName</key>
+    <string>Lernplattform</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Die Kamera wird nur verwendet, wenn du in einem Kurs ein Foto oder Video hochladen möchtest.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Das Mikrofon wird nur verwendet, wenn du in einem Kurs eine Aufnahme erstellen möchtest.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Fotos werden nur ausgewählt, wenn du sie in einem Kurs hochladen möchtest.</string>
+    <key>UILaunchScreen</key>
+    <dict/>
+</dict>
+</plist>
