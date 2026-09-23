@@ -61,6 +61,7 @@ jobs:
   testflight:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_testflight }}
     runs-on: macos-26
+    environment: testflight
     timeout-minutes: 60
     steps:
       - name: Checkout
