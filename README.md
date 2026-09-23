@@ -4,9 +4,9 @@ Ein kleiner iOS-Client in SwiftUI für die [ByCS-Lernplattform](https://lernplat
 
 ## Starten
 
-1. `ByCSLernclient.xcodeproj` mit Xcode 15 oder neuer öffnen.
+1. `ByCSLernclient.xcodeproj` mit Xcode 26 oder neuer öffnen.
 2. Ein iPhone oder einen iOS-Simulator mit iOS 16.4 oder neuer wählen und **Run** drücken.
-3. Für ein echtes Gerät unter **Signing & Capabilities** das eigene Team und eine eindeutige Bundle ID wählen.
+3. Das Projekt ist für das Apple-Developer-Team `222H9N53MT` und die registrierte Bundle ID `com.merlinmanch.mebisclient` eingerichtet. Für andere Konten Team und Bundle ID anpassen.
 4. Unter **Weitere Optionen → Anmeldedaten speichern** die ByCS-Kennung und das Passwort einmalig eingeben. Die App speichert beides nur auf diesem Gerät im iOS-Schlüsselbund und meldet sich bei einer erneuten ByCS-Anmeldemaske automatisch an.
 5. Änderungen des Passworts, MFA und Nutzungsbedingungen werden auf der offiziellen Anmeldeseite abgewickelt. Nach einer Passwortänderung müssen die gespeicherten Daten in der App aktualisiert werden.
 
@@ -15,6 +15,8 @@ Ein kleiner iOS-Client in SwiftUI für die [ByCS-Lernplattform](https://lernplat
 Jeder Push auf `main` sowie ein manueller Start über **Actions → Build iOS IPA → Run workflow** erzeugen das Artefakt `ByCSLernclient-unsigned-ipa`. Unter dem jeweiligen Run kann die IPA als ZIP-Artefakt heruntergeladen werden. Der Build nutzt einen macOS-Runner und erstellt ein Archiv für echte iOS-Geräte.
 
 **Die IPA ist unsigniert und lässt sich so nicht auf einem iPhone installieren.** Für eine installierbare IPA braucht es ein Apple-Developer-Team, eine passende Bundle ID, ein Zertifikat und ein Provisioning-Profil. Diese privaten Daten gehören nicht in das Repository. In Xcode kann die App mit dem eigenen Team direkt auf ein Gerät gebaut werden.
+
+Der manuelle Workflow kann zusätzlich einen signierten Build zu TestFlight senden. Dafür werden im Repository drei **Actions-Secrets** benötigt: `ASC_API_KEY_ID`, `ASC_ISSUER_ID` und `ASC_API_KEY_P8` (der unveränderte Inhalt der `.p8`-Datei). Der App-Store-Connect-API-Schlüssel muss die Berechtigung für cloudverwaltete Distributionszertifikate und den Upload der App besitzen. Er darf nie in den Quellcode oder ein Action-Artefakt gelangen. Nach der Einrichtung unter **Actions → Build iOS IPA → Run workflow** `upload_testflight` aktivieren. Der Lauf archiviert mit automatischer Signierung und lädt über Xcode direkt zu App Store Connect hoch; anschließend verarbeitet Apple den Build, bevor er unter TestFlight sichtbar ist.
 
 Die App verwendet den dauerhaften Website-Datenspeicher von WebKit. Nach einem Neustart werden gültige Sitzungscookies wiederverwendet. Sind sie abgelaufen, trägt die App auf `https://auth.bycs.de` die freiwillig gespeicherten Zugangsdaten in das ByCS-Loginformular ein. Ein fehlgeschlagener automatischer Versuch wird nicht wiederholt, bis die Daten neu gespeichert oder die Anmeldung manuell abgeschlossen wurde. MFA kann weiterhin eine manuelle Bestätigung erfordern. Über **Weitere Optionen → Abmelden** werden gespeicherte Zugangsdaten, Cookies und Website-Daten entfernt. Im Menü **Anmeldedaten ändern** können die Daten getrennt von einer aktiven Sitzung gelöscht werden.
 
