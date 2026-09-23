@@ -1,6 +1,6 @@
 # ByCS Lernclient für iOS
 
-Ein kleiner iOS-Client in SwiftUI für die [ByCS-Lernplattform](https://lernplattform.bycs.de/my/). Native Bedienelemente bieten Navigation, Laden, Teilen und Dateiexport. Kurse, Aufgaben, Foren, Tests und die ByCS-Anmeldung erscheinen in einem `WKWebView`, damit die tatsächlich von der Schule freigeschalteten Moodle-Funktionen nutzbar bleiben.
+Ein kleiner iOS-Client in SwiftUI für die [ByCS-Lernplattform](https://lernplattform.bycs.de/my/courses.php). Die Kursübersicht ist die Startseite und über **Meine Kurse** jederzeit erreichbar. Native Bedienelemente bieten Navigation, Laden, Teilen und Dateiexport. Kurse, Aufgaben, Foren, Tests und die ByCS-Anmeldung erscheinen in einem `WKWebView`, damit die tatsächlich von der Schule freigeschalteten Moodle-Funktionen nutzbar bleiben.
 
 ## Starten
 
@@ -17,6 +17,8 @@ Jeder Push auf `main` sowie ein manueller Start über **Actions → Build iOS IP
 **Die IPA ist unsigniert und lässt sich so nicht auf einem iPhone installieren.** Für eine installierbare IPA braucht es ein Apple-Developer-Team, eine passende Bundle ID, ein Zertifikat und ein Provisioning-Profil. Diese privaten Daten gehören nicht in das Repository. In Xcode kann die App mit dem eigenen Team direkt auf ein Gerät gebaut werden.
 
 Die App verwendet den dauerhaften Website-Datenspeicher von WebKit. Nach einem Neustart werden gültige Sitzungscookies wiederverwendet. Sind sie abgelaufen, trägt die App auf `https://auth.bycs.de` die freiwillig gespeicherten Zugangsdaten in das ByCS-Loginformular ein. Ein fehlgeschlagener automatischer Versuch wird nicht wiederholt, bis die Daten neu gespeichert oder die Anmeldung manuell abgeschlossen wurde. MFA kann weiterhin eine manuelle Bestätigung erfordern. Über **Weitere Optionen → Abmelden** werden gespeicherte Zugangsdaten, Cookies und Website-Daten entfernt. Im Menü **Anmeldedaten ändern** können die Daten getrennt von einer aktiven Sitzung gelöscht werden.
+
+Nach der Anmeldung wird `/my/courses.php` geladen. Falls ByCS stattdessen zunächst den allgemeinen Schreibtisch unter `/my/` öffnet, führt die App einmalig weiter zur Kursübersicht.
 
 ## Grenzen
 

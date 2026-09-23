@@ -4,7 +4,7 @@ import WebKit
 
 @MainActor
 final class BrowserModel: NSObject, ObservableObject {
-    static let deskURL = URL(string: "https://lernplattform.bycs.de/my/")!
+    static let homeURL = URL(string: "https://lernplattform.bycs.de/my/courses.php")!
 
     @Published private(set) var currentURL: URL?
     @Published private(set) var canGoBack = false
@@ -22,6 +22,7 @@ final class BrowserModel: NSObject, ObservableObject {
     private var destinations: [ObjectIdentifier: URL] = [:]
     private var attemptedAutomaticLogin = false
     private var automaticLoginPaused = false
+    private var awaitingLoginLanding = false
 
     override init() {
         let configuration = WKWebViewConfiguration()
@@ -52,17 +53,17 @@ final class BrowserModel: NSObject, ObservableObject {
                 Task { @MainActor in self?.progress = view.estimatedProgress }
             }
         ]
-        goToDesk()
+        goHome()
     }
 
-    func goToDesk() {
+    func goHome() {
         errorMessage = nil
-        webView.load(URLRequest(url: Self.deskURL))
+        webView.load(URLRequest(url: Self.homeURL))
     }
 
     func reload() {
         errorMessage = nil
-        if webView.url == nil { goToDesk() } else { webView.reload() }
+        if webView.url == nil { goHome() } else { webView.reload() }
     }
 
     func clearSession() {
@@ -73,7 +74,7 @@ final class BrowserModel: NSObject, ObservableObject {
             ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
             modifiedSince: .distantPast
         ) { [weak self] in
-            Task { @MainActor in self?.goToDesk() }
+            Task { @MainActor in self?.goHome() }
         }
     }
 
@@ -112,9 +113,16 @@ final class BrowserModel: NSObject, ObservableObject {
             attemptedAutomaticLogin = false
             automaticLoginPaused = false
             automaticLoginNotice = nil
+            if url.path == Self.homeURL.path {
+                awaitingLoginLanding = false
+            } else if awaitingLoginLanding && url.path == "/my/" {
+                awaitingLoginLanding = false
+                goHome()
+            }
             return
         }
         guard isByCSLogin(url) else { return }
+        awaitingLoginLanding = true
         if attemptedAutomaticLogin {
             webView.evaluateJavaScript(
                 "Boolean(document.querySelector('form#kc-form-login input[name=password]'))"

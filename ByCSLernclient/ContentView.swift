@@ -71,7 +71,7 @@ struct ContentView: View {
 
             Divider()
             HStack {
-                control("house", "Schreibtisch") { browser.goToDesk() }
+                control("books.vertical", "Meine Kurse") { browser.goHome() }
                 Spacer()
                 control("chevron.left", "Zurück", disabled: !browser.canGoBack) {
                     browser.webView.goBack()
@@ -83,7 +83,7 @@ struct ContentView: View {
                 Spacer()
                 control("arrow.clockwise", "Neu laden") { browser.reload() }
                 Spacer()
-                ShareLink(item: browser.currentURL ?? BrowserModel.deskURL) {
+                ShareLink(item: browser.currentURL ?? BrowserModel.homeURL) {
                     Image(systemName: "square.and.arrow.up")
                         .frame(minWidth: 44, minHeight: 44)
                 }
