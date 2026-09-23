@@ -102,10 +102,11 @@
 		800000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {
 			ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 			CURRENT_PROJECT_VERSION = 1;
+			DEVELOPMENT_TEAM = 222H9N53MT;
 			GENERATE_INFOPLIST_FILE = NO;
 			INFOPLIST_FILE = ByCSLernclient/Info.plist;
 			MARKETING_VERSION = 1.0;
-			PRODUCT_BUNDLE_IDENTIFIER = de.example.ByCSLernclient;
+			PRODUCT_BUNDLE_IDENTIFIER = com.merlinmanch.mebisclient;
 			PRODUCT_NAME = "$(TARGET_NAME)";
 			SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 			SWIFT_VERSION = 5.0;
@@ -114,10 +115,11 @@
 		800000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {
 			ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 			CURRENT_PROJECT_VERSION = 1;
+			DEVELOPMENT_TEAM = 222H9N53MT;
 			GENERATE_INFOPLIST_FILE = NO;
 			INFOPLIST_FILE = ByCSLernclient/Info.plist;
 			MARKETING_VERSION = 1.0;
-			PRODUCT_BUNDLE_IDENTIFIER = de.example.ByCSLernclient;
+			PRODUCT_BUNDLE_IDENTIFIER = com.merlinmanch.mebisclient;
 			PRODUCT_NAME = "$(TARGET_NAME)";
 			SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 			SWIFT_VERSION = 5.0;
