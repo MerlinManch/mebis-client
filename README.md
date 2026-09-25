@@ -1,6 +1,6 @@
 # ByCS Lernclient für iOS
 
-Ein kleiner iOS-Client in SwiftUI für die [ByCS-Lernplattform](https://lernplattform.bycs.de/my/courses.php). Die Kursübersicht ist die Startseite und über **Meine Kurse** jederzeit erreichbar. Native Bedienelemente bieten Navigation, Laden, Teilen und Dateiexport. Kurse, Aufgaben, Foren, Tests und die ByCS-Anmeldung erscheinen in einem `WKWebView`, damit die tatsächlich von der Schule freigeschalteten Moodle-Funktionen nutzbar bleiben.
+Ein kleiner iOS-Client in SwiftUI für die [ByCS-Lernplattform](https://lernplattform.bycs.de/my/courses.php). Die Kursübersicht ist die Startseite und über **Meine Kurse** jederzeit erreichbar. Native Bedienelemente bieten Navigation, Laden, Teilen und einen lokalen Dateimanager. Kurse, Aufgaben, Foren, Tests und die ByCS-Anmeldung erscheinen in einem `WKWebView`, damit die tatsächlich von der Schule freigeschalteten Moodle-Funktionen nutzbar bleiben.
 
 ## Starten
 
@@ -9,6 +9,10 @@ Ein kleiner iOS-Client in SwiftUI für die [ByCS-Lernplattform](https://lernplat
 3. Das Projekt ist für das Apple-Developer-Team `222H9N53MT` und die registrierte Bundle ID `com.merlinmanch.mebisclient` eingerichtet. Für andere Konten Team und Bundle ID anpassen.
 4. Unter **Weitere Optionen → Anmeldedaten speichern** die ByCS-Kennung und das Passwort einmalig eingeben. Die App speichert beides nur auf diesem Gerät im iOS-Schlüsselbund und meldet sich bei einer erneuten ByCS-Anmeldemaske automatisch an.
 5. Änderungen des Passworts, MFA und Nutzungsbedingungen werden auf der offiziellen Anmeldeseite abgewickelt. Nach einer Passwortänderung müssen die gespeicherten Daten in der App aktualisiert werden.
+
+## Dateien
+
+Beim Öffnen eines PDFs oder Bildes als eigene Seite fragt die App, ob es **im Dateimanager gespeichert** oder **in der App geöffnet** werden soll. Beide Wege verwenden den authentifizierten WebKit-Download, damit auch geschützte Kursdateien geladen werden können; beim Öffnen zeigt Quick Look die Datei nur vorübergehend an. Über das Ordnersymbol oder **Weitere Optionen → Dateimanager** lassen sich gespeicherte Dateien offline ansehen, teilen und löschen. Gleichnamige Dateien erhalten einen nummerierten Namen; die Ablage liegt lokal im Dokumente-Verzeichnis der App. Eingebettete Bilder innerhalb einer Webseite werden nicht einzeln abgefragt. Bei Downloads anderer Dateitypen bietet die bestehende Downloadansicht zusätzlich das Speichern im Dateimanager an.
 
 ## GitHub Actions
 
@@ -27,7 +31,7 @@ Nach der Anmeldung wird `/my/courses.php` geladen. Falls ByCS stattdessen zunäc
 - Dies ist eine native Swift-App mit integrierter Webansicht, kein vollständiger nativer Moodle-Datenclient. Für eine eigenständige native Darstellung von Kursen, Aufgaben und Mitteilungen wäre eine vom Betreiber freigegebene API samt Authentifizierungsverfahren erforderlich.
 - Alle Inhalte benötigen eine Internetverbindung. Es gibt keinen Offline-Abgleich und keine Push-Mitteilungen.
 - Manche externen Kurswerkzeuge öffnen eine neue Seite; diese wird im selben Webbereich geladen. Die jeweilige Domain steht stets oben in der App.
-- Unverschlüsselte HTTP-Links werden abgewiesen. Anhänge können über die iOS-Teilenansicht in Dateien gespeichert werden.
+- Unverschlüsselte HTTP-Links werden abgewiesen. Anhänge können über die iOS-Teilenansicht exportiert werden; im Dateimanager gespeicherte Kopien bleiben bis zum Löschen in der App erhalten.
 - Funktion und Login müssen mit einem freigeschalteten ByCS-Konto auf einem iPhone geprüft werden. In dieser Linux-Umgebung steht Xcode nicht zur Verfügung.
 
 ## Quellen
