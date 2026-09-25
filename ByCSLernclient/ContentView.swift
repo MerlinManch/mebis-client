@@ -4,6 +4,7 @@ struct ContentView: View {
     @StateObject private var browser = BrowserModel()
     @State private var showClearConfirmation = false
     @State private var showCredentials = false
+    @State private var showFileManager = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,6 +25,11 @@ struct ContentView: View {
                 Spacer(minLength: 0)
 
                 Menu {
+                    Button {
+                        showFileManager = true
+                    } label: {
+                        Label("Dateimanager", systemImage: "folder")
+                    }
                     Button {
                         showCredentials = true
                     } label: {
@@ -73,6 +79,8 @@ struct ContentView: View {
             HStack {
                 control("books.vertical", "Meine Kurse") { browser.goHome() }
                 Spacer()
+                control("folder", "Dateimanager") { showFileManager = true }
+                Spacer()
                 control("chevron.left", "Zurück", disabled: !browser.canGoBack) {
                     browser.webView.goBack()
                 }
@@ -103,6 +111,19 @@ struct ContentView: View {
         .sheet(isPresented: $showCredentials) {
             CredentialsView(browser: browser)
         }
+        .sheet(isPresented: $showFileManager) {
+            FileManagerView(store: browser.files)
+        }
+        .alert("Datei öffnen?", isPresented: Binding(
+            get: { browser.pendingAttachment != nil },
+            set: { _ in }
+        )) {
+            Button("Im Dateimanager speichern") { browser.chooseAttachment(save: true) }
+            Button("In App öffnen") { browser.chooseAttachment(save: false) }
+            Button("Abbrechen", role: .cancel) { browser.cancelAttachment() }
+        } message: {
+            Text("\(browser.pendingAttachment?.filename ?? "Datei") speichern oder direkt in der Lernplattform anzeigen?")
+        }
         .alert("Hinweis", isPresented: Binding(
             get: { browser.errorMessage != nil },
             set: { if !$0 { browser.errorMessage = nil } }
@@ -118,14 +139,41 @@ struct ContentView: View {
                 Text(file.url.lastPathComponent)
                     .font(.headline)
                     .multilineTextAlignment(.center)
+                Button {
+                    if browser.files.saveTemporaryFile(file.url) {
+                        browser.downloadedFile = nil
+                    } else {
+                        browser.errorMessage = browser.files.errorMessage
+                        browser.files.errorMessage = nil
+                    }
+                } label: {
+                    Label("Im Dateimanager speichern", systemImage: "folder.badge.plus")
+                }
+                .buttonStyle(.borderedProminent)
                 ShareLink(item: file.url) {
                     Label("Datei speichern oder teilen", systemImage: "square.and.arrow.up")
                 }
-                .buttonStyle(.borderedProminent)
                 Button("Schließen") { browser.downloadedFile = nil }
             }
             .padding(28)
             .presentationDetents([.medium])
+        }
+        .sheet(item: $browser.previewFile, onDismiss: { browser.closePreview() }) { file in
+            NavigationStack {
+                FilePreview(url: file.url)
+                    .navigationTitle(file.url.lastPathComponent)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Fertig") { browser.previewFile = nil }
+                        }
+                        ToolbarItem(placement: .bottomBar) {
+                            ShareLink(item: file.url) {
+                                Label("Teilen", systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    }
+            }
         }
     }
 
