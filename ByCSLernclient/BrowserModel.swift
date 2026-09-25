@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UniformTypeIdentifiers
 import WebKit
 
 @MainActor
@@ -13,13 +14,20 @@ final class BrowserModel: NSObject, ObservableObject {
     @Published private(set) var progress = 0.0
     @Published var errorMessage: String?
     @Published var downloadedFile: DownloadedFile?
+    @Published var previewFile: DownloadedFile?
+    @Published var pendingAttachment: AttachmentPrompt?
     @Published private(set) var hasSavedCredentials = false
     @Published private(set) var savedUsername: String?
     @Published private(set) var automaticLoginNotice: String?
 
     let webView: WKWebView
+    let files = LocalFileStore()
     private var observations: [NSKeyValueObservation] = []
-    private var destinations: [ObjectIdentifier: URL] = [:]
+    private var destinations: [ObjectIdentifier: (url: URL, choice: AttachmentChoice?)] = [:]
+    private var attachmentRequests: [(url: URL, choice: AttachmentChoice)] = []
+    private var downloadChoices: [ObjectIdentifier: AttachmentChoice] = [:]
+    private var previewTemporaryURL: URL?
+    private var pendingAttachmentDecision: ((WKNavigationResponsePolicy) -> Void)?
     private var attemptedAutomaticLogin = false
     private var automaticLoginPaused = false
     private var awaitingLoginLanding = false
@@ -76,6 +84,34 @@ final class BrowserModel: NSObject, ObservableObject {
         ) { [weak self] in
             Task { @MainActor in self?.goHome() }
         }
+    }
+
+    func chooseAttachment(save: Bool) {
+        guard let decision = pendingAttachmentDecision else { return }
+        pendingAttachmentDecision = nil
+        let url = pendingAttachment?.url
+        pendingAttachment = nil
+        if let url {
+            attachmentRequests.append((url, save ? .save : .preview))
+            decision(.download)
+        } else {
+            decision(.cancel)
+        }
+    }
+
+    func closePreview() {
+        if let url = previewTemporaryURL {
+            try? FileManager.default.removeItem(at: url.deletingLastPathComponent())
+        }
+        previewTemporaryURL = nil
+        previewFile = nil
+    }
+
+    func cancelAttachment() {
+        guard let decision = pendingAttachmentDecision else { return }
+        pendingAttachmentDecision = nil
+        pendingAttachment = nil
+        decision(.cancel)
     }
 
     func saveCredentials(username: String, password: String) -> Bool {
@@ -191,6 +227,17 @@ struct DownloadedFile: Identifiable {
     let url: URL
 }
 
+struct AttachmentPrompt: Identifiable {
+    let id = UUID()
+    let url: URL
+    let filename: String
+}
+
+private enum AttachmentChoice: Equatable {
+    case save
+    case preview
+}
+
 extension BrowserModel: WKNavigationDelegate, WKUIDelegate, WKDownloadDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         handleFinishedPage(webView)
@@ -218,42 +265,106 @@ extension BrowserModel: WKNavigationDelegate, WKUIDelegate, WKDownloadDelegate {
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse,
                  decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        let response = navigationResponse.response
+        let mime = response.mimeType?.lowercased() ?? ""
+        let filename = response.suggestedFilename ?? response.url?.lastPathComponent ?? "Datei"
+        let extensionType = UTType(filenameExtension: (filename as NSString).pathExtension)
+        let mediaFile = mime == "application/pdf" || mime.hasPrefix("image/") ||
+            ((mime.isEmpty || mime == "application/octet-stream") &&
+             (extensionType?.conforms(to: .pdf) == true || extensionType?.conforms(to: .image) == true))
+        if navigationResponse.isForMainFrame,
+           let url = response.url, url.scheme == "https" || url.scheme == "blob",
+           mediaFile {
+            guard pendingAttachmentDecision == nil else {
+                decisionHandler(.cancel)
+                return
+            }
+            pendingAttachmentDecision = decisionHandler
+            pendingAttachment = AttachmentPrompt(url: url, filename: filename)
+            return
+        }
         decisionHandler(navigationResponse.canShowMIMEType ? .allow : .download)
     }
 
     func webView(_ webView: WKWebView, navigationAction: WKNavigationAction,
                  didBecome download: WKDownload) {
+        prepare(download)
         download.delegate = self
     }
 
     func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse,
                  didBecome download: WKDownload) {
+        prepare(download)
         download.delegate = self
+    }
+
+    private func prepare(_ download: WKDownload) {
+        guard !attachmentRequests.isEmpty else { return }
+        if let originalURL = download.originalRequest?.url,
+           let index = attachmentRequests.firstIndex(where: { $0.url == originalURL }) {
+            let request = attachmentRequests.remove(at: index)
+            downloadChoices[ObjectIdentifier(download)] = request.choice
+        } else if attachmentRequests.count == 1 {
+            // A redirect can change the final response URL used for the prompt.
+            let request = attachmentRequests.removeFirst()
+            downloadChoices[ObjectIdentifier(download)] = request.choice
+        }
     }
 
     func download(_ download: WKDownload, decideDestinationUsing response: URLResponse,
                   suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
-        let filename = (suggestedFilename as NSString).lastPathComponent
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let identifier = ObjectIdentifier(download)
+        let choice = downloadChoices[identifier]
         do {
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            let destination = directory.appendingPathComponent(filename.isEmpty ? "Download" : filename)
-            destinations[ObjectIdentifier(download)] = destination
+            let destination: URL
+            if choice == .save {
+                destination = try files.destination(for: suggestedFilename, mimeType: response.mimeType)
+            } else {
+                let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+                try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                var filename = (suggestedFilename as NSString).lastPathComponent
+                if filename.isEmpty || filename == "." || filename == ".." { filename = "Download" }
+                if choice == .preview,
+                   let mime = response.mimeType,
+                   let type = UTType(mimeType: mime),
+                   (type.conforms(to: .pdf) || type.conforms(to: .image)),
+                   let preferred = type.preferredFilenameExtension,
+                   UTType(filenameExtension: (filename as NSString).pathExtension)?.conforms(to: type) != true {
+                    filename += ".\(preferred)"
+                }
+                destination = directory.appendingPathComponent(filename.isEmpty ? "Download" : filename)
+            }
+            destinations[identifier] = (destination, choice)
             completionHandler(destination)
         } catch {
+            downloadChoices.removeValue(forKey: identifier)
             errorMessage = "Die Datei konnte nicht gespeichert werden."
             completionHandler(nil)
         }
     }
 
     func downloadDidFinish(_ download: WKDownload) {
-        if let destination = destinations.removeValue(forKey: ObjectIdentifier(download)) {
-            downloadedFile = DownloadedFile(url: destination)
+        let identifier = ObjectIdentifier(download)
+        downloadChoices.removeValue(forKey: identifier)
+        if let destination = destinations.removeValue(forKey: identifier) {
+            switch destination.choice {
+            case .some(.save):
+                files.didSaveFile()
+            case .some(.preview):
+                previewTemporaryURL = destination.url
+                previewFile = DownloadedFile(url: destination.url)
+            case nil:
+                downloadedFile = DownloadedFile(url: destination.url)
+            }
         }
     }
 
     func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
-        destinations.removeValue(forKey: ObjectIdentifier(download))
+        let identifier = ObjectIdentifier(download)
+        if let destination = destinations.removeValue(forKey: identifier) {
+            try? FileManager.default.removeItem(at: destination.url)
+        }
+        downloadChoices.removeValue(forKey: identifier)
         errorMessage = "Der Download ist fehlgeschlagen: \(error.localizedDescription)"
     }
 
