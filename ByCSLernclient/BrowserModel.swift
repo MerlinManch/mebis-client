@@ -379,7 +379,10 @@ extension BrowserModel: WKNavigationDelegate, WKUIDelegate, WKDownloadDelegate {
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!,
                  withError error: Error) {
-        guard (error as NSError).code != NSURLErrorCancelled else { return }
+        let failure = error as NSError
+        if failure.domain == NSURLErrorDomain && failure.code == NSURLErrorCancelled { return }
+        // WebKit interrupts the page navigation when its response becomes a download.
+        if failure.domain == "WebKitErrorDomain" && failure.code == 102 { return }
         errorMessage = "Die Seite konnte nicht geladen werden: \(error.localizedDescription)"
     }
 }
