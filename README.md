@@ -14,6 +14,8 @@ Ein kleiner iOS-Client in SwiftUI für die [ByCS-Lernplattform](https://lernplat
 
 Beim Öffnen eines PDFs oder Bildes als eigene Seite fragt die App, ob es **im Dateimanager gespeichert** oder **in der App geöffnet** werden soll. Beide Wege verwenden den authentifizierten WebKit-Download, damit auch geschützte Kursdateien geladen werden können; beim Öffnen zeigt Quick Look die Datei nur vorübergehend an. Über das Ordnersymbol oder **Weitere Optionen → Dateimanager** lassen sich gespeicherte Dateien offline ansehen, teilen und löschen. Gleichnamige Dateien erhalten einen nummerierten Namen; die Ablage liegt lokal im Dokumente-Verzeichnis der App. Eingebettete Bilder innerhalb einer Webseite werden nicht einzeln abgefragt. Bei Downloads anderer Dateitypen bietet die bestehende Downloadansicht zusätzlich das Speichern im Dateimanager an.
 
+Über **Auswählen** lassen sich mehrere PDFs und Bilder in der gewünschten Reihenfolge markieren. **Als PDF exportieren** fügt sämtliche Seiten der markierten PDFs und jedes Bild als eigene Seite zu einer mehrseitigen PDF zusammen. Die Vorschau bietet **Teilen oder in Dateien sichern**. Andere Dateitypen können nicht markiert werden; passwortgeschützte oder nicht lesbare Dateien melden einen Fehler. Die Originaldateien bleiben erhalten.
+
 ## GitHub Actions
 
 Jeder Push auf `main` sowie ein manueller Start über **Actions → Build iOS IPA → Run workflow** erzeugen das Artefakt `ByCSLernclient-unsigned-ipa`. Unter dem jeweiligen Run kann die IPA als ZIP-Artefakt heruntergeladen werden. Der Build nutzt einen macOS-Runner und erstellt ein Archiv für echte iOS-Geräte.
