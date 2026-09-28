@@ -114,15 +114,13 @@ struct ContentView: View {
         .sheet(isPresented: $showFileManager) {
             FileManagerView(store: browser.files)
         }
-        .alert("Datei öffnen?", isPresented: Binding(
+        .alert("Datei: \(browser.pendingAttachment?.filename ?? "Datei")", isPresented: Binding(
             get: { browser.pendingAttachment != nil },
             set: { _ in }
         )) {
             Button("Im Dateimanager speichern") { browser.chooseAttachment(save: true) }
             Button("In App öffnen") { browser.chooseAttachment(save: false) }
             Button("Abbrechen", role: .cancel) { browser.cancelAttachment() }
-        } message: {
-            Text("\(browser.pendingAttachment?.filename ?? "Datei") speichern oder direkt in der Lernplattform anzeigen?")
         }
         .alert("Hinweis", isPresented: Binding(
             get: { browser.errorMessage != nil },

@@ -29,16 +29,21 @@ struct FileManagerView: View {
                                 Image(systemName: file.isImage ? "photo" : "doc.fill")
                                     .font(.title2)
                                     .frame(width: 32)
+                                    .foregroundStyle(.tint)
                                 VStack(alignment: .leading, spacing: 3) {
-                                    Text(file.name).lineLimit(2)
+                                    Text(file.name)
+                                        .foregroundStyle(.primary)
+                                        .lineLimit(2)
                                     Text("\(ByteCountFormatter.string(fromByteCount: file.size, countStyle: .file)) · \(file.modified.formatted(date: .abbreviated, time: .shortened))")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
                             }
                         }
+                        .buttonStyle(.plain)
                         .swipeActions {
                             Button("Löschen", role: .destructive) { fileToDelete = file }
+                                .tint(.red)
                             ShareLink(item: file.url) {
                                 Label("Teilen", systemImage: "square.and.arrow.up")
                             }
