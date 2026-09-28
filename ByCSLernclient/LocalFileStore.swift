@@ -10,6 +10,10 @@ struct LocalFile: Identifiable {
     var id: URL { url }
     var name: String { url.lastPathComponent }
     var isImage: Bool { UTType(filenameExtension: url.pathExtension)?.conforms(to: .image) == true }
+    var canExportAsPDF: Bool {
+        guard let type = UTType(filenameExtension: url.pathExtension) else { return false }
+        return type.conforms(to: .pdf) || type.conforms(to: .image)
+    }
 }
 
 @MainActor
